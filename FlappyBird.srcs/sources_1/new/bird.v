@@ -15,10 +15,19 @@ always @(posedge clk) begin
         bird_y <= 200;
         sprite_state <= 0;
     end else if (frame_tick) begin
-        if (btn_up)
-            bird_y <= bird_y - 5;
-        else
-            bird_y <= bird_y + 2;
+        bird_x <= 100;
+        sprite_state <= 0;
+        if (btn_up) begin
+            if (bird_y < 5)
+                bird_y <= 0;
+            else
+                bird_y <= bird_y - 5;
+        end else begin
+            if (bird_y > 477)
+                bird_y <= 479;
+            else
+                bird_y <= bird_y + 2;
+        end
     end
 end
 
