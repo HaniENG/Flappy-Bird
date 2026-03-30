@@ -25,8 +25,10 @@ wire [1:0] sprite_state;
 
 wire [9:0] pipe_x0, pipe_x0_right;
 wire [9:0] pipe_x1, pipe_x1_right;
+wire [9:0] pipe_x2, pipe_x2_right;
 wire [9:0] gap_top0, gap_bottom0;
 wire [9:0] gap_top1, gap_bottom1;
+wire [9:0] gap_top2, gap_bottom2;
 
 wire hit;
 wire [1:0] lives;
@@ -64,17 +66,22 @@ pipes p(
     .vcount(vcount),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
+    .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
-    .gap_top1(gap_top1), .gap_bottom1(gap_bottom1)
+    .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
+    .gap_top2(gap_top2), .gap_bottom2(gap_bottom2)
 );
 
 collision c(
     .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .bird_x(bird_x), .bird_y(bird_y),
-    .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),
+    .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
+    .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
+    .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
+    .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
     .hit(hit),
     .lives(lives)
 );
@@ -89,8 +96,10 @@ renderer r(
     .mode_sprite(sw[1]),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
+    .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
+    .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
     .colour(colour)
 );
 

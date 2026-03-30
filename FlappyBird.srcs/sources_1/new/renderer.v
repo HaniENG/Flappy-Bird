@@ -8,14 +8,12 @@ module renderer(
     input [1:0] lives,
     input mode_colour,
     input mode_sprite,
-    input [9:0] pipe_x0,
-    input [9:0] pipe_x0_right,
-    input [9:0] pipe_x1,
-    input [9:0] pipe_x1_right,
-    input [9:0] gap_top0,
-    input [9:0] gap_bottom0,
-    input [9:0] gap_top1,
-    input [9:0] gap_bottom1,
+    input [9:0] pipe_x0, pipe_x0_right,
+    input [9:0] pipe_x1, pipe_x1_right,
+    input [9:0] pipe_x2, pipe_x2_right,
+    input [9:0] gap_top0, gap_bottom0,
+    input [9:0] gap_top1, gap_bottom1,
+    input [9:0] gap_top2, gap_bottom2,
     output reg [11:0] colour
 );
 
@@ -24,9 +22,11 @@ wire bird_pixel = (hcount >= bird_x) && (hcount < bird_x + 16) &&
 
 wire pipe0_col = (hcount >= pipe_x0) && (hcount < pipe_x0_right);
 wire pipe1_col = (hcount >= pipe_x1) && (hcount < pipe_x1_right);
+wire pipe2_col = (hcount >= pipe_x2) && (hcount < pipe_x2_right);
 
 wire pipe_pixel = (pipe0_col && (vcount < gap_top0 || vcount > gap_bottom0)) ||
-                  (pipe1_col && (vcount < gap_top1 || vcount > gap_bottom1));
+                  (pipe1_col && (vcount < gap_top1 || vcount > gap_bottom1)) ||
+                  (pipe2_col && (vcount < gap_top2 || vcount > gap_bottom2));
 
 always @(*) begin
     if (!active)

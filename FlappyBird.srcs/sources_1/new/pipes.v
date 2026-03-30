@@ -4,81 +4,103 @@ module pipes(
     input frame_tick,
     input mode_frenzy,
     input [9:0] vcount,
-    output reg [9:0] pipe_x0,
-    output reg [9:0] pipe_x0_right,
-    output reg [9:0] pipe_x1,
-    output reg [9:0] pipe_x1_right,
-    output reg [9:0] gap_top0,
-    output reg [9:0] gap_bottom0,
-    output reg [9:0] gap_top1,
-    output reg [9:0] gap_bottom1
+    output reg [9:0] pipe_x0, pipe_x0_right,
+    output reg [9:0] pipe_x1, pipe_x1_right,
+    output reg [9:0] pipe_x2, pipe_x2_right,
+    output reg [9:0] gap_top0, gap_bottom0,
+    output reg [9:0] gap_top1, gap_bottom1,
+    output reg [9:0] gap_top2, gap_bottom2
 );
 
-// 11-bit signed so we can track positions below zero without wrapping
-reg signed [10:0] x0;
-reg signed [10:0] x1;
+// 12-bit signed: covers -2048..2047 (x2 starts at 1176, needs > 1023)
+reg signed [11:0] x0, x1, x2;
+wire signed [11:0] right0 = x0 + 12'sd32;
+wire signed [11:0] right1 = x1 + 12'sd32;
+wire signed [11:0] right2 = x2 + 12'sd32;
 
-// Right edge = left + 32, computed as signed so we can detect fully off-screen
-wire signed [10:0] right0 = x0 + 11'sd32;
-wire signed [10:0] right1 = x1 + 11'sd32;
+// 16-bit Fibonacci LFSR — runs every clock, used as random source on pipe reset
+reg [15:0] lfsr = 16'hACE1;
+always @(posedge clk)
+    lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
 
-// One-shot flag: update exactly once per vertical blank period
+// Random gap_top in [80..207]; gap_bottom = gap_top + 150 → [230..357], both within 480
+wire [9:0] rand_top = 10'd80 + {3'b0, lfsr[6:0]};
+
 reg updated_this_blank;
 
 always @(posedge clk) begin
     if (reset) begin
-        x0                 <= 11'sd640;
-        x1                 <= 11'sd975;   // 640 + 335 spacing
-        pipe_x0            <= 10'd640;
-        pipe_x0_right      <= 10'd672;
-        pipe_x1            <= 10'd975;
-        pipe_x1_right      <= 10'd1007;
-        gap_top0           <= 10'd150;
-        gap_bottom0        <= 10'd300;
-        gap_top1           <= 10'd150;
-        gap_bottom1        <= 10'd300;
+        // Three pipes spaced 268 px apart, all starting off-screen right
+        x0 <= 12'sd640;
+        x1 <= 12'sd908;    // 640 + 268
+        x2 <= 12'sd1176;   // 640 + 536
+        pipe_x0 <= 10'd700; pipe_x0_right <= 10'd700;
+        pipe_x1 <= 10'd700; pipe_x1_right <= 10'd700;
+        pipe_x2 <= 10'd700; pipe_x2_right <= 10'd700;
+        gap_top0 <= 10'd150; gap_bottom0 <= 10'd300;
+        gap_top1 <= 10'd150; gap_bottom1 <= 10'd300;
+        gap_top2 <= 10'd150; gap_bottom2 <= 10'd300;
         updated_this_blank <= 1'b0;
     end else begin
-        // --------------------------------------------------
-        // Smooth left-edge exit via right-edge clipping:
-        //   right <= 0 : fully off left screen  -> hide (700)
-        //   x < 0, right > 0 : partially visible -> left=0, right=right
-        //   x >= 0 : normal
-        // --------------------------------------------------
-        pipe_x0       <= (right0 <= 11'sd0) ? 10'd700 :
-                         (x0     <  11'sd0) ? 10'd0   : x0[9:0];
-        pipe_x0_right <= (right0 <= 11'sd0) ? 10'd700 : right0[9:0];
+        // ---- Output clamping (every cycle, no tearing) ----
+        // x >= 640 : off screen right → hide
+        // right <= 0: off screen left  → hide
+        // x < 0, right > 0: partially visible at left edge
+        // else: normal
 
-        pipe_x1       <= (right1 <= 11'sd0) ? 10'd700 :
-                         (x1     <  11'sd0) ? 10'd0   : x1[9:0];
-        pipe_x1_right <= (right1 <= 11'sd0) ? 10'd700 : right1[9:0];
+        // Pipe 0
+        if (right0 <= 12'sd0 || x0 >= 12'sd640) begin
+            pipe_x0 <= 10'd700; pipe_x0_right <= 10'd700;
+        end else if (x0 < 12'sd0) begin
+            pipe_x0 <= 10'd0;   pipe_x0_right <= right0[9:0];
+        end else begin
+            pipe_x0 <= x0[9:0]; pipe_x0_right <= right0[9:0];
+        end
 
-        // --------------------------------------------------
-        // Move pipes ONLY during vertical blanking (vcount >= 480)
-        // Ensures pipe_x never changes while screen is being drawn
-        // --------------------------------------------------
+        // Pipe 1
+        if (right1 <= 12'sd0 || x1 >= 12'sd640) begin
+            pipe_x1 <= 10'd700; pipe_x1_right <= 10'd700;
+        end else if (x1 < 12'sd0) begin
+            pipe_x1 <= 10'd0;   pipe_x1_right <= right1[9:0];
+        end else begin
+            pipe_x1 <= x1[9:0]; pipe_x1_right <= right1[9:0];
+        end
+
+        // Pipe 2
+        if (right2 <= 12'sd0 || x2 >= 12'sd640) begin
+            pipe_x2 <= 10'd700; pipe_x2_right <= 10'd700;
+        end else if (x2 < 12'sd0) begin
+            pipe_x2 <= 10'd0;   pipe_x2_right <= right2[9:0];
+        end else begin
+            pipe_x2 <= x2[9:0]; pipe_x2_right <= right2[9:0];
+        end
+
+        // ---- Position update: vblank only, once per frame ----
         if (vcount < 10'd480) begin
             updated_this_blank <= 1'b0;
         end else if (!updated_this_blank) begin
             updated_this_blank <= 1'b1;
 
-            // Default: move both left by 2
-            x0 <= x0 - 11'sd2;
-            x1 <= x1 - 11'sd2;
+            x0 <= x0 - 12'sd2;
+            x1 <= x1 - 12'sd2;
+            x2 <= x2 - 12'sd2;
 
-            // Reset pipe0 once fully off-screen, relative to pipe1
-            // Threshold: next step would make right edge <= 0
-            if (x0 - 11'sd2 + 11'sd32 <= 11'sd0) begin
-                x0          <= x1 + 11'sd335;
-                gap_top0    <= 10'd150;
-                gap_bottom0 <= 10'd300;
+            // When right edge of a pipe would be fully off screen next step,
+            // reset it to 268 px ahead of the furthest remaining pipe
+            if (right0 - 12'sd2 <= 12'sd0) begin
+                x0          <= ((x1 > x2) ? x1 : x2) + 12'sd268;
+                gap_top0    <= rand_top;
+                gap_bottom0 <= rand_top + 10'd150;
             end
-
-            // Reset pipe1 once fully off-screen, relative to pipe0
-            if (x1 - 11'sd2 + 11'sd32 <= 11'sd0) begin
-                x1          <= x0 + 11'sd335;
-                gap_top1    <= 10'd150;
-                gap_bottom1 <= 10'd300;
+            if (right1 - 12'sd2 <= 12'sd0) begin
+                x1          <= ((x0 > x2) ? x0 : x2) + 12'sd268;
+                gap_top1    <= rand_top;
+                gap_bottom1 <= rand_top + 10'd150;
+            end
+            if (right2 - 12'sd2 <= 12'sd0) begin
+                x2          <= ((x0 > x1) ? x0 : x1) + 12'sd268;
+                gap_top2    <= rand_top;
+                gap_bottom2 <= rand_top + 10'd150;
             end
         end
     end
