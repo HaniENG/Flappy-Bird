@@ -26,7 +26,7 @@ always @(posedge clk) begin
             if (bird_y > 477)
                 bird_y <= 479;
             else
-                bird_y <= bird_y + 2;
+                bird_y <= bird_y + 3;
         end
     end
 end

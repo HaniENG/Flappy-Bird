@@ -52,10 +52,10 @@ always @(posedge clk) begin
         // Five pipes evenly spaced 134 px apart, all starting off screen right.
         // Steady-state spawn: max_all + 134 = (-30 + 4*134) + 134 = 640. ✓
         x0 <= 12'sd640;
-        x1 <= 12'sd774;
-        x2 <= 12'sd908;
-        x3 <= 12'sd1042;
-        x4 <= 12'sd1176;
+        x1 <= 12'sd800;
+        x2 <= 12'sd960;
+        x3 <= 12'sd1120;
+        x4 <= 12'sd1280;
         pipe_x0 <= 10'd700; pipe_x0_right <= 10'd700;
         pipe_x1 <= 10'd700; pipe_x1_right <= 10'd700;
         pipe_x2 <= 10'd700; pipe_x2_right <= 10'd700;
@@ -122,27 +122,27 @@ always @(posedge clk) begin
             x4 <= x4 - 12'sd2;
 
             if (right0 - 12'sd2 <= 12'sd0) begin
-                x0          <= max_all + 12'sd134;
+                x0          <= max_all + 12'sd160;
                 gap_top0    <= rand_top;
                 gap_bottom0 <= rand_top + 10'd150;
             end
             if (right1 - 12'sd2 <= 12'sd0) begin
-                x1          <= max_all + 12'sd134;
+                x1          <= max_all + 12'sd160;
                 gap_top1    <= rand_top;
                 gap_bottom1 <= rand_top + 10'd150;
             end
             if (right2 - 12'sd2 <= 12'sd0) begin
-                x2          <= max_all + 12'sd134;
+                x2          <= max_all + 12'sd160;
                 gap_top2    <= rand_top;
                 gap_bottom2 <= rand_top + 10'd150;
             end
             if (right3 - 12'sd2 <= 12'sd0) begin
-                x3          <= max_all + 12'sd134;
+                x3          <= max_all + 12'sd160;
                 gap_top3    <= rand_top;
                 gap_bottom3 <= rand_top + 10'd150;
             end
             if (right4 - 12'sd2 <= 12'sd0) begin
-                x4          <= max_all + 12'sd134;
+                x4          <= max_all + 12'sd160;
                 gap_top4    <= rand_top;
                 gap_bottom4 <= rand_top + 10'd150;
             end
