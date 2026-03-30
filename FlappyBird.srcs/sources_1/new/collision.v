@@ -2,6 +2,7 @@ module collision(
     input clk,
     input reset,
     input frame_tick,
+    input life_mode_en,
     input [9:0] bird_x,
     input [9:0] bird_y,
     input [9:0] pipe_x0, pipe_x0_right,
@@ -14,10 +15,14 @@ module collision(
     input [9:0] gap_top3, gap_bottom3,
     output reg hit,
     output reg [1:0] lives,
-    output reg game_over
+    output reg game_over,
+    output reg bird_visible
 );
 
+localparam [6:0] INVULN_FRAMES = 7'd72;
+
 reg in_collision;
+reg [6:0] invuln_frames;
 
 // Horizontal overlap: bird right edge past pipe left AND bird left edge before pipe right
 wire h0 = (bird_x + 10'd16 > pipe_x0) && (bird_x < pipe_x0_right);
@@ -31,7 +36,8 @@ wire v1 = (bird_y < gap_top1) || (bird_y + 10'd16 > gap_bottom1);
 wire v2 = (bird_y < gap_top2) || (bird_y + 10'd16 > gap_bottom2);
 wire v3 = (bird_y < gap_top3) || (bird_y + 10'd16 > gap_bottom3);
 
-wire collision = (h0 && v0) || (h1 && v1) || (h2 && v2) || (h3 && v3);
+wire collision_now = (h0 && v0) || (h1 && v1) || (h2 && v2) || (h3 && v3);
+wire invincible = (invuln_frames != 7'd0);
 
 always @(posedge clk) begin
     if (reset) begin
@@ -39,20 +45,45 @@ always @(posedge clk) begin
         hit          <= 1'b0;
         in_collision <= 1'b0;
         game_over    <= 1'b0;
+        bird_visible <= 1'b1;
+        invuln_frames <= 7'd0;
     end else if (frame_tick) begin
-        if (collision && !in_collision && !game_over) begin
-            // Leading edge of a new collision
-            hit          <= 1'b1;
-            lives        <= (lives > 2'd0) ? lives - 2'd1 : 2'd0;
-            game_over    <= 1'b1;
-            in_collision <= 1'b1;
-        end else if (!collision) begin
-            // No collision — clear state
+        hit <= 1'b0;
+
+        if (!collision_now)
             in_collision <= 1'b0;
-            hit          <= 1'b0;
+
+        if (invincible) begin
+            bird_visible <= ~bird_visible;
+            if (invuln_frames == 7'd1) begin
+                invuln_frames <= 7'd0;
+                bird_visible <= 1'b1;
+            end else begin
+                invuln_frames <= invuln_frames - 7'd1;
+            end
         end else begin
-            // Ongoing collision — don't re-trigger
-            hit <= 1'b0;
+            bird_visible <= 1'b1;
+        end
+
+        if (collision_now && !in_collision && !invincible && !game_over) begin
+            in_collision <= 1'b1;
+
+            if (life_mode_en && (lives > 2'd1)) begin
+                // Non-fatal hit: lose a life, respawn bird, and flicker briefly.
+                lives         <= lives - 2'd1;
+                hit           <= 1'b1;
+                invuln_frames <= INVULN_FRAMES;
+                bird_visible  <= 1'b0;
+            end else if (life_mode_en) begin
+                lives         <= 2'd0;
+                game_over     <= 1'b1;
+                invuln_frames <= 7'd0;
+                bird_visible  <= 1'b1;
+            end else begin
+                game_over     <= 1'b1;
+                invuln_frames <= 7'd0;
+                bird_visible  <= 1'b1;
+            end
         end
     end
 end

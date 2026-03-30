@@ -22,19 +22,23 @@ always @(posedge clk) begin
         bird_x <= 100;
         bird_y <= START_Y;
         sprite_state <= 0;
-    end else if (frame_tick && !game_over) begin
+    end else if (frame_tick) begin
         bird_x <= 100;
         sprite_state <= 0;
-        if (btn_up) begin
-            if (bird_y < JUMP_STEP)
-                bird_y <= 0;
-            else
-                bird_y <= bird_y - JUMP_STEP;
-        end else begin
-            if (bird_y >= MAX_Y - FALL_STEP)
-                bird_y <= MAX_Y;
-            else
-                bird_y <= bird_y + FALL_STEP;
+        if (hit) begin
+            bird_y <= START_Y;
+        end else if (!game_over) begin
+            if (btn_up) begin
+                if (bird_y < JUMP_STEP)
+                    bird_y <= 0;
+                else
+                    bird_y <= bird_y - JUMP_STEP;
+            end else begin
+                if (bird_y >= MAX_Y - FALL_STEP)
+                    bird_y <= MAX_Y;
+                else
+                    bird_y <= bird_y + FALL_STEP;
+            end
         end
     end
 end

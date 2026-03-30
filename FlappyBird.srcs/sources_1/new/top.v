@@ -2,7 +2,7 @@ module top(
     input clk,
     input reset,
     input btn_up,
-    input [2:0] sw,
+    input [3:0] sw,
     output [3:0] VGA_R,
     output [3:0] VGA_G,
     output [3:0] VGA_B,
@@ -36,6 +36,7 @@ wire hit;
 wire [1:0] lives;
 wire game_over;
 wire pipe_score_pulse;
+wire bird_visible;
 
 wire [11:0] colour;
 reg [3:0] score_thousands;
@@ -118,6 +119,7 @@ pipes p(
 collision c(
     .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
+    .life_mode_en(sw[3]),
     .bird_x(bird_x), .bird_y(bird_y),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
@@ -129,15 +131,18 @@ collision c(
     .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
     .hit(hit),
     .lives(lives),
-    .game_over(game_over)
+    .game_over(game_over),
+    .bird_visible(bird_visible)
 );
 
 renderer r(
     .hcount(hcount), .vcount(vcount),
     .active(active),
     .bird_x(bird_x), .bird_y(bird_y),
+    .bird_visible(bird_visible),
     .sprite_state(sprite_state),
     .lives(lives),
+    .life_mode_en(sw[3]),
     .score_thousands(score_thousands),
     .score_hundreds(score_hundreds),
     .score_tens(score_tens),
