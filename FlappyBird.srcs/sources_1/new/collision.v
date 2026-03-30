@@ -13,7 +13,8 @@ module collision(
     input [9:0] gap_top2, gap_bottom2,
     input [9:0] gap_top3, gap_bottom3,
     output reg hit,
-    output reg [1:0] lives
+    output reg [1:0] lives,
+    output reg game_over
 );
 
 reg in_collision;
@@ -37,11 +38,13 @@ always @(posedge clk) begin
         lives        <= 2'd3;
         hit          <= 1'b0;
         in_collision <= 1'b0;
+        game_over    <= 1'b0;
     end else if (frame_tick) begin
-        if (collision && !in_collision) begin
+        if (collision && !in_collision && !game_over) begin
             // Leading edge of a new collision
             hit          <= 1'b1;
             lives        <= (lives > 2'd0) ? lives - 2'd1 : 2'd0;
+            game_over    <= 1'b1;
             in_collision <= 1'b1;
         end else if (!collision) begin
             // No collision — clear state

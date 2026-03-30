@@ -4,6 +4,7 @@ module bird(
     input frame_tick,
     input btn_up,
     input hit,
+    input game_over,
     output reg [9:0] bird_x,
     output reg [9:0] bird_y,
     output reg [1:0] sprite_state
@@ -14,7 +15,7 @@ always @(posedge clk) begin
         bird_x <= 100;
         bird_y <= 232;
         sprite_state <= 0;
-    end else if (frame_tick) begin
+    end else if (frame_tick && !game_over) begin
         bird_x <= 100;
         sprite_state <= 0;
         if (btn_up) begin

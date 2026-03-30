@@ -3,6 +3,7 @@ module pipes(
     input reset,
     input frame_tick,
     input mode_frenzy,
+    input game_over,
     input [9:0] vcount,
     output reg [9:0] pipe_x0, pipe_x0_right,
     output reg [9:0] pipe_x1, pipe_x1_right,
@@ -35,18 +36,21 @@ always @(posedge clk)
 // gap_top in [80..207]; gap_bottom = gap_top + 150 → [230..357]
 wire [9:0] rand_top = 10'd80 + {3'b0, lfsr[6:0]};
 
-// Spawn position: natural = max_all + 160, but clamp to minimum 640 so pipes
-// always enter from off-screen right and slide in smoothly (no pop-in).
-wire signed [11:0] next_spawn = (next_spawn < 12'sd640) ? 12'sd640 : next_spawn;
+// Spawn position pipelined to break critical path: x3→max_all→adder→next_spawn.
+// Registered one cycle ahead; safe because vblank lasts thousands of cycles.
+wire signed [11:0] base_spawn = max_all + 12'sd160;
+reg  signed [11:0] next_spawn;
+always @(posedge clk)
+    next_spawn <= (base_spawn < 12'sd640) ? 12'sd640 : base_spawn;
 
 reg updated_this_blank;
 
 always @(posedge clk) begin
     if (reset) begin
-        x0 <= 12'sd640;
-        x1 <= 12'sd800;
-        x2 <= 12'sd960;
-        x3 <= 12'sd1120;
+        x0 <= 12'sd940;
+        x1 <= 12'sd1100;
+        x2 <= 12'sd1260;
+        x3 <= 12'sd1420;
         pipe_x0 <= 10'd700; pipe_x0_right <= 10'd700;
         pipe_x1 <= 10'd700; pipe_x1_right <= 10'd700;
         pipe_x2 <= 10'd700; pipe_x2_right <= 10'd700;
@@ -93,7 +97,7 @@ always @(posedge clk) begin
         // ---- Position update: vblank only, once per frame ----
         if (vcount < 10'd480) begin
             updated_this_blank <= 1'b0;
-        end else if (!updated_this_blank) begin
+        end else if (!updated_this_blank && !game_over) begin
             updated_this_blank <= 1'b1;
 
             x0 <= x0 - 12'sd2;

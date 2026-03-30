@@ -34,6 +34,7 @@ wire [9:0] gap_top3, gap_bottom3;
 
 wire hit;
 wire [1:0] lives;
+wire game_over;
 
 wire [11:0] colour;
 
@@ -56,6 +57,7 @@ bird b(
     .frame_tick(frame_tick),
     .btn_up(btn_up),
     .hit(hit),
+    .game_over(game_over),
     .bird_x(bird_x),
     .bird_y(bird_y),
     .sprite_state(sprite_state)
@@ -65,6 +67,7 @@ pipes p(
     .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .mode_frenzy(sw[0]),
+    .game_over(game_over),
     .vcount(vcount),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
@@ -89,7 +92,8 @@ collision c(
     .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
     .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
     .hit(hit),
-    .lives(lives)
+    .lives(lives),
+    .game_over(game_over)
 );
 
 renderer r(
