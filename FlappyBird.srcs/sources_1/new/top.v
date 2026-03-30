@@ -26,9 +26,13 @@ wire [1:0] sprite_state;
 wire [9:0] pipe_x0, pipe_x0_right;
 wire [9:0] pipe_x1, pipe_x1_right;
 wire [9:0] pipe_x2, pipe_x2_right;
+wire [9:0] pipe_x3, pipe_x3_right;
+wire [9:0] pipe_x4, pipe_x4_right;
 wire [9:0] gap_top0, gap_bottom0;
 wire [9:0] gap_top1, gap_bottom1;
 wire [9:0] gap_top2, gap_bottom2;
+wire [9:0] gap_top3, gap_bottom3;
+wire [9:0] gap_top4, gap_bottom4;
 
 wire hit;
 wire [1:0] lives;
@@ -67,9 +71,13 @@ pipes p(
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
     .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
+    .pipe_x3(pipe_x3), .pipe_x3_right(pipe_x3_right),
+    .pipe_x4(pipe_x4), .pipe_x4_right(pipe_x4_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
-    .gap_top2(gap_top2), .gap_bottom2(gap_bottom2)
+    .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
+    .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
+    .gap_top4(gap_top4), .gap_bottom4(gap_bottom4)
 );
 
 collision c(
@@ -79,9 +87,13 @@ collision c(
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
     .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
+    .pipe_x3(pipe_x3), .pipe_x3_right(pipe_x3_right),
+    .pipe_x4(pipe_x4), .pipe_x4_right(pipe_x4_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
     .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
+    .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
+    .gap_top4(gap_top4), .gap_bottom4(gap_bottom4),
     .hit(hit),
     .lives(lives)
 );
@@ -97,9 +109,13 @@ renderer r(
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
     .pipe_x2(pipe_x2), .pipe_x2_right(pipe_x2_right),
+    .pipe_x3(pipe_x3), .pipe_x3_right(pipe_x3_right),
+    .pipe_x4(pipe_x4), .pipe_x4_right(pipe_x4_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
     .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
+    .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
+    .gap_top4(gap_top4), .gap_bottom4(gap_bottom4),
     .colour(colour)
 );
 
