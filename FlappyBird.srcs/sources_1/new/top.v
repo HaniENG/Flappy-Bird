@@ -10,6 +10,9 @@ module top(
     output VGA_VS
 );
 
+// CPU_RESETN is active-low; invert so internal reset is active-high
+wire rst = ~reset;
+
 // internal wires
 wire frame_tick;
 
@@ -29,17 +32,22 @@ wire [1:0] lives;
 
 wire [11:0] colour;
 
-// modules (empty for now)
-clock_divider clk_div(.clk(clk), .reset(reset), .frame_tick(frame_tick));
+// 25 MHz pixel tick: pulse every 4 cycles of 100 MHz clock
+reg [1:0] pixel_cnt = 0;
+wire pixel_tick;
+always @(posedge clk) pixel_cnt <= pixel_cnt + 1;
+assign pixel_tick = (pixel_cnt == 2'b11);
+
+clock_divider clk_div(.clk(clk), .reset(rst), .frame_tick(frame_tick));
 
 vga_controller vga(
-    .clk(clk), .reset(reset),
+    .clk(clk), .pixel_tick(pixel_tick), .reset(rst),
     .hcount(hcount), .vcount(vcount),
     .hsync(hsync), .vsync(vsync), .active(active)
 );
 
 bird b(
-    .clk(clk), .reset(reset),
+    .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .btn_up(btn_up),
     .hit(hit),
@@ -49,7 +57,7 @@ bird b(
 );
 
 pipes p(
-    .clk(clk), .reset(reset),
+    .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .mode_frenzy(sw[0]),
     .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),
@@ -58,7 +66,7 @@ pipes p(
 );
 
 collision c(
-    .clk(clk), .reset(reset),
+    .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .bird_x(bird_x), .bird_y(bird_y),
     .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),

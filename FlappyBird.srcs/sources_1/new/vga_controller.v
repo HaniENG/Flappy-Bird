@@ -1,5 +1,6 @@
 module vga_controller(
     input clk,
+    input pixel_tick,
     input reset,
     output reg [9:0] hcount,
     output reg [9:0] vcount,
@@ -12,7 +13,7 @@ always @(posedge clk) begin
     if (reset) begin
         hcount <= 0;
         vcount <= 0;
-    end else begin
+    end else if (pixel_tick) begin
         if (hcount == 799) begin
             hcount <= 0;
             if (vcount == 524)
@@ -26,8 +27,8 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-    hsync = ~(hcount >= 656 && hcount < 752);
-    vsync = ~(vcount >= 490 && vcount < 492);
+    hsync  = ~(hcount >= 656 && hcount < 752);
+    vsync  = ~(vcount >= 490 && vcount < 492);
     active = (hcount < 640 && vcount < 480);
 end
 
