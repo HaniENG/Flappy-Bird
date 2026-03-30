@@ -35,14 +35,48 @@ wire [9:0] gap_top3, gap_bottom3;
 wire hit;
 wire [1:0] lives;
 wire game_over;
+wire pipe_score_pulse;
 
 wire [11:0] colour;
+reg [3:0] score_thousands;
+reg [3:0] score_hundreds;
+reg [3:0] score_tens;
+reg [3:0] score_ones;
 
 // 25 MHz pixel tick: pulse every 4 cycles of 100 MHz clock
 reg [1:0] pixel_cnt = 0;
 wire pixel_tick;
 always @(posedge clk) pixel_cnt <= pixel_cnt + 1;
 assign pixel_tick = (pixel_cnt == 2'b11);
+
+always @(posedge clk) begin
+    if (rst) begin
+        score_thousands <= 4'd0;
+        score_hundreds  <= 4'd0;
+        score_tens      <= 4'd0;
+        score_ones      <= 4'd0;
+    end else if (pipe_score_pulse) begin
+        if (score_ones == 4'd9) begin
+            score_ones <= 4'd0;
+            if (score_tens == 4'd9) begin
+                score_tens <= 4'd0;
+                if (score_hundreds == 4'd9) begin
+                    score_hundreds <= 4'd0;
+                    if (score_thousands == 4'd9)
+                        score_thousands <= 4'd0;
+                    else
+                        score_thousands <= score_thousands + 4'd1;
+                end else begin
+                    score_hundreds <= score_hundreds + 4'd1;
+                end
+            end else begin
+                score_tens <= score_tens + 4'd1;
+            end
+        end else begin
+            score_ones <= score_ones + 4'd1;
+        end
+    end
+end
 
 clock_divider clk_div(.clk(clk), .reset(rst), .frame_tick(frame_tick));
 
@@ -68,6 +102,7 @@ pipes p(
     .frame_tick(frame_tick),
     .mode_frenzy(sw[0]),
     .game_over(game_over),
+    .bird_x(bird_x),
     .vcount(vcount),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
     .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
@@ -76,7 +111,8 @@ pipes p(
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
     .gap_top2(gap_top2), .gap_bottom2(gap_bottom2),
-    .gap_top3(gap_top3), .gap_bottom3(gap_bottom3)
+    .gap_top3(gap_top3), .gap_bottom3(gap_bottom3),
+    .score_pulse(pipe_score_pulse)
 );
 
 collision c(
@@ -102,6 +138,10 @@ renderer r(
     .bird_x(bird_x), .bird_y(bird_y),
     .sprite_state(sprite_state),
     .lives(lives),
+    .score_thousands(score_thousands),
+    .score_hundreds(score_hundreds),
+    .score_tens(score_tens),
+    .score_ones(score_ones),
     .mode_colour(sw[2]),
     .mode_sprite(sw[1]),
     .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
