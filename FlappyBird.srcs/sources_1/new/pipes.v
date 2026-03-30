@@ -35,6 +35,10 @@ always @(posedge clk)
 // gap_top in [80..207]; gap_bottom = gap_top + 150 → [230..357]
 wire [9:0] rand_top = 10'd80 + {3'b0, lfsr[6:0]};
 
+// Spawn position: natural = max_all + 160, but clamp to minimum 640 so pipes
+// always enter from off-screen right and slide in smoothly (no pop-in).
+wire signed [11:0] next_spawn = (next_spawn < 12'sd640) ? 12'sd640 : next_spawn;
+
 reg updated_this_blank;
 
 always @(posedge clk) begin
@@ -98,22 +102,22 @@ always @(posedge clk) begin
             x3 <= x3 - 12'sd2;
 
             if (right0 - 12'sd2 <= 12'sd0) begin
-                x0          <= max_all + 12'sd160;
+                x0          <= next_spawn;
                 gap_top0    <= rand_top;
                 gap_bottom0 <= rand_top + 10'd150;
             end
             if (right1 - 12'sd2 <= 12'sd0) begin
-                x1          <= max_all + 12'sd160;
+                x1          <= next_spawn;
                 gap_top1    <= rand_top;
                 gap_bottom1 <= rand_top + 10'd150;
             end
             if (right2 - 12'sd2 <= 12'sd0) begin
-                x2          <= max_all + 12'sd160;
+                x2          <= next_spawn;
                 gap_top2    <= rand_top;
                 gap_bottom2 <= rand_top + 10'd150;
             end
             if (right3 - 12'sd2 <= 12'sd0) begin
-                x3          <= max_all + 12'sd160;
+                x3          <= next_spawn;
                 gap_top3    <= rand_top;
                 gap_bottom3 <= rand_top + 10'd150;
             end
