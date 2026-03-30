@@ -23,7 +23,8 @@ wire hsync, vsync;
 wire [9:0] bird_x, bird_y;
 wire [1:0] sprite_state;
 
-wire [9:0] pipe_x0, pipe_x1;
+wire [9:0] pipe_x0, pipe_x0_right;
+wire [9:0] pipe_x1, pipe_x1_right;
 wire [9:0] gap_top0, gap_bottom0;
 wire [9:0] gap_top1, gap_bottom1;
 
@@ -61,7 +62,8 @@ pipes p(
     .frame_tick(frame_tick),
     .mode_frenzy(sw[0]),
     .vcount(vcount),
-    .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),
+    .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
+    .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1)
 );
@@ -85,7 +87,8 @@ renderer r(
     .lives(lives),
     .mode_colour(sw[2]),
     .mode_sprite(sw[1]),
-    .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),
+    .pipe_x0(pipe_x0), .pipe_x0_right(pipe_x0_right),
+    .pipe_x1(pipe_x1), .pipe_x1_right(pipe_x1_right),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1),
     .colour(colour)
