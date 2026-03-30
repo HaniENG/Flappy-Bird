@@ -60,6 +60,7 @@ pipes p(
     .clk(clk), .reset(rst),
     .frame_tick(frame_tick),
     .mode_frenzy(sw[0]),
+    .vcount(vcount),
     .pipe_x0(pipe_x0), .pipe_x1(pipe_x1),
     .gap_top0(gap_top0), .gap_bottom0(gap_bottom0),
     .gap_top1(gap_top1), .gap_bottom1(gap_bottom1)

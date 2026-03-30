@@ -12,7 +12,7 @@ module bird(
 always @(posedge clk) begin
     if (reset) begin
         bird_x <= 100;
-        bird_y <= 200;
+        bird_y <= 232;
         sprite_state <= 0;
     end else if (frame_tick) begin
         bird_x <= 100;

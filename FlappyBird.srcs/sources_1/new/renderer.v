@@ -20,11 +20,19 @@ module renderer(
 wire bird_pixel = (hcount >= bird_x) && (hcount < bird_x + 16) &&
                   (vcount >= bird_y) && (vcount < bird_y + 16);
 
+wire pipe0_col = (hcount >= pipe_x0) && (hcount < pipe_x0 + 32);
+wire pipe1_col = (hcount >= pipe_x1) && (hcount < pipe_x1 + 32);
+
+wire pipe_pixel = (pipe0_col && (vcount < gap_top0 || vcount > gap_bottom0)) ||
+                  (pipe1_col && (vcount < gap_top1 || vcount > gap_bottom1));
+
 always @(*) begin
     if (!active)
         colour = 12'h000;
     else if (bird_pixel)
         colour = 12'hFFF;
+    else if (pipe_pixel)
+        colour = 12'h0F0;
     else
         colour = mode_colour ? 12'hF00 : 12'h00F;
 end
